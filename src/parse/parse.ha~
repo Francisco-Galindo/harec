@@ -1,0 +1,14 @@
+fn _type(lexer: *lex::lexer) (ast::_type | error);
+fn decl(lexer: *lex::lexer) (ast::decl | error);
+fn decls(lexer: *lex::lexer) ([]ast::decl | error);
+fn define(lexer: *lex::lexer) (ast::decl_const | error);
+fn expr(lexer: *lex::lexer) (ast::expr | error);
+fn ident(lexer: *lex::lexer) (ast::ident | error);
+fn ident_trailing(lexer: *lex::lexer) ((ast::ident, bool) | error);
+fn identstr(in: str) (ast::ident | error);
+fn imports(lexer: *lex::lexer) ([]ast::import | error);
+fn peek(lexer: *lex::lexer, want: lex::ltok...) (lex::token | error | void);
+fn strerror(err: error) const str;
+fn subunit(lexer: *lex::lexer) (ast::subunit | error);
+fn try(lexer: *lex::lexer, want: lex::ltok...) (lex::token | error | void);
+fn want(lexer: *lex::lexer, want: lex::ltok...) (lex::token | error);
