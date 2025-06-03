@@ -19,6 +19,7 @@
 
 
 ## Introduction
+In this project we will create a compiler, making also the parser that the compiler will use. Both the compiler and the parser will use hare programming language for implementing the program and as the language that will be compiled.
 
 ## Theorical Background
 
