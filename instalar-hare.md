@@ -30,6 +30,8 @@ Prueba `qbe` con este comando:
 qbe -h
 ```
 
+Instala `scdoc`
+
 ```sh
 # O el que tú hayas creado
 cd /hola/soy/una/ruta/instalando-hare
