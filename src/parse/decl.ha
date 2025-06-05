@@ -3,13 +3,16 @@ use hare::ast;
 use hare::lex;
 use hare::lex::{ltok};
 use strings;
+use fmt;
 
 // Parses the declarations for a sub-unit.
 export fn decls(lexer: *lex::lexer) ([]ast::decl | error) = {
 	let decls: []ast::decl = [];
 	for (true) {
+		let loc = lex::mkloc(lexer);
 		if (peek(lexer, ltok::EOF)? is lex::token) break;
 		append(decls, decl_func(lexer)?);
+		want(lexer, ltok::SEMICOLON)?;
 	};
 	return decls;
 };
@@ -28,11 +31,6 @@ fn decl_func(lexer: *lex::lexer) (ast::decl | error) = {
 	let tok = want(lexer, ltok::EQUAL, ltok::SEMICOLON)?;
 	let body = switch (tok.0) {
 	case ltok::EQUAL =>
-		for (let param &.. prototype.params) {
-			if (len(param.name) == 0) {
-				return syntaxerr(param.loc, "Expected parameter name un function declaration");
-			};
-		};
 		yield alloc(expr(lexer)?);
 	case ltok::SEMICOLON =>
 		lex::unlex(lexer, tok);

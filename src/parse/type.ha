@@ -3,6 +3,7 @@ use hare::ast::{builtin_type};
 use hare::lex;
 use hare::lex::{ltok};
 use strings;
+use fmt;
 
 fn integer_type(lexer: *lex::lexer) (builtin_type | error) = {
 	const tok = want(lexer)?;
@@ -64,6 +65,7 @@ fn primitive_type(lexer: *lex::lexer) (ast::_type | error) = {
 			ltok::I64, ltok::U8, ltok::U16, ltok::U32,
 			ltok::U64, ltok::INT, ltok::UINT, ltok::SIZE,
 			ltok::UINTPTR =>
+		lex::unlex(lexer, tok);
 		yield integer_type(lexer)?;
 	case ltok::RUNE =>
 		yield builtin_type::RUNE;
@@ -434,6 +436,11 @@ fn prototype(lexer: *lex::lexer) (ast::func_type | error) = {
 			yield "";
 		};
 
+		if (name == "") {
+			want(lexer, ltok::RPAREN)?;
+			break;
+		};
+
 		let typ = _type(lexer)?;
 
 		let func_param = ast::func_param {
@@ -469,7 +476,8 @@ fn prototype(lexer: *lex::lexer) (ast::func_type | error) = {
 				want(lexer, ltok::RPAREN)?;
 				variadism = ast::variadism::HARE;
 				break;
-			case => abort(); // unreachable
+			case =>
+			    abort(); // unreachable
 			};
 		case void =>
 			want(lexer, ltok::RPAREN)?;

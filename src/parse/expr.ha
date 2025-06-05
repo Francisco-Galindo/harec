@@ -10,10 +10,10 @@ use fmt;
 // Si no, haz shunting yard hasta acabar expresión o llegar a asignación
 // Si hay asignación, evaluar el rhs
 // Devolver chaval
-export fn expr(lexer: *lex::lexer) (ast::expr | error) = {
+export fn expr(lexer: *lex::lexer, is_in_parenthesis: bool = false) (ast::expr | error) = {
 	let loc = lex::mkloc(lexer);
 
-	const assignment_ops: [_]ltok = [ltok::EQUAL];
+	const assignment_ops: [_]ltok = [ltok::EQUAL, ltok::DIVEQ, ltok::MINUSEQ, ltok::PLUSEQ, ltok::TIMESEQ];
 
 	let tok = peek(lexer)? as lex::token;
 	let expr: ast::expr = switch (tok.0) {
@@ -30,7 +30,7 @@ export fn expr(lexer: *lex::lexer) (ast::expr | error) = {
 	case ltok::LBRACE =>
 		yield compound_expr(lexer)?;
 	case =>
-		let ex = shunting_yard(lexer)?;
+		let ex = shunting_yard(lexer, is_in_parenthesis)?;
 		match (try(lexer, assignment_ops ...)) {
 		case let tok: lex::token =>
 			let lhs = ex;
@@ -41,7 +41,7 @@ export fn expr(lexer: *lex::lexer) (ast::expr | error) = {
 					start = loc,
 					end = lex::prevloc(lexer),
 					expr = ast::assign_expr {
-						op = tok_to_op(tok),
+						op = assignment_op_to_op(tok),
 						object = alloc(lhs),
 						value = alloc(rhs),
 					},
@@ -50,6 +50,7 @@ export fn expr(lexer: *lex::lexer) (ast::expr | error) = {
 			case =>
 				return syntaxerr(lex::mkloc(lexer), "LHS of assignment has to be an identifier");
 			};
+		case => void;
 		};
 		yield ex;
 	};
@@ -64,11 +65,13 @@ fn compound_expr(lexer: *lex::lexer) (ast::expr | error) = {
 
 	let exprs: []*ast::expr = [];
 	for (true) {
-		if (try(lexer, ltok::LET) is lex::token) {
+		if (peek(lexer, ltok::LET) is lex::token) {
 			append(exprs, alloc(binding(lexer)?));
 		} else {
-			append(exprs, alloc(expr(lexer)?));
+			let ex = expr(lexer)?;
+			append(exprs, alloc(ex));
 		};
+
 		want(lexer, ltok::SEMICOLON)?;
 
 		match (try(lexer, ltok::RBRACE)) {
@@ -91,8 +94,12 @@ fn if_expr(lexer: *lex::lexer) (ast::expr | error) = {
 	let loc = lex::mkloc(lexer);
 	want(lexer, ltok::IF)?;
 	want(lexer, ltok::LPAREN)?;
-	let cond = alloc(expr(lexer)?);
-	want(lexer, ltok::RPAREN)?;
+
+
+	let cond = alloc(expr(lexer, true)?);
+
+	let newloc = lex::mkloc(lexer);
+	// want(lexer, ltok::RPAREN)?;
 	let tbranch = alloc(expr(lexer)?);
 	let fbranch: nullable *ast::expr = if (try(lexer, ltok::ELSE) is lex::token) {
 		yield alloc(expr(lexer)?);
@@ -123,7 +130,7 @@ fn for_expr(lexer: *lex::lexer) (ast::expr | error) = {
 		yield null;
 	};
 
-	let cond: nullable *ast::expr = match (expr(lexer)) {
+	let cond: nullable *ast::expr = match (expr(lexer, true)) {
 	case let expr: ast::expr =>
 		yield alloc(expr);
 	case =>
@@ -197,11 +204,12 @@ fn return_expr(lexer: *lex::lexer) (ast::expr | error) = {
 
 };
 
-export fn shunting_yard(lexer: *lex::lexer) (ast::expr | error) = {
+export fn shunting_yard(lexer: *lex::lexer, is_in_parenthesis: bool = false) (ast::expr | error) = {
 	let loc = lex::mkloc(lexer);
 	let ast_queue: []*ast::expr = [];
 	let stack: []*ast::expr = [];
 	let operator_stack: []lex::token = [];
+	let lparen_ctr = 0z;
 
 	for (true) {
 		let exp_loc = lex::mkloc(lexer);
@@ -211,9 +219,6 @@ export fn shunting_yard(lexer: *lex::lexer) (ast::expr | error) = {
 			switch(tok.0) {
 			case ltok::RPAREN =>
 				for (len(operator_stack) > 0 && operator_stack[0].0 != ltok::LPAREN) {
-					if (len(operator_stack) == 0) {
-						return syntaxerr(lex::mkloc(lexer), "Closing parenthesis without matching opening one.");
-					};
 
 					let pop = operator_stack[0];
 					delete(operator_stack[0]);
@@ -234,12 +239,18 @@ export fn shunting_yard(lexer: *lex::lexer) (ast::expr | error) = {
 
 				};
 
-				if (operator_stack[0].0 != ltok::LPAREN) {
+				if (is_in_parenthesis && len(operator_stack) == 0) {
+					break;
+				} else if (len(operator_stack) == 0) {
 					return syntaxerr(lex::mkloc(lexer), "Closing parenthesis without matching opening one.");
 				};
+
+
 				delete(operator_stack[0]);
 
+
 			case ltok::LPAREN =>
+				lparen_ctr += 1;
 				insert(operator_stack[0], tok);
 			case ltok::LOR, ltok::LAND, ltok::LEQUAL, ltok::NEQUAL,
 					ltok::LESS, ltok::LESSEQ, ltok::GT, ltok::GTEQ,
@@ -287,9 +298,17 @@ export fn shunting_yard(lexer: *lex::lexer) (ast::expr | error) = {
 					end = lex::prevloc(lexer),
 					expr = id,
 				});
-				append(ast_queue, expr);
+
+				match (peek(lexer, ltok::LPAREN)) {
+				case lex::token =>
+					expr = alloc(fn_call(lexer, expr)?);
+					append(ast_queue, expr);
+				case =>
+					append(ast_queue, expr);
+				};
 			case =>
 				lex::unlex(lexer, tok);
+				break;
 			};
 		case => break;
 		};
@@ -327,6 +346,62 @@ export fn shunting_yard(lexer: *lex::lexer) (ast::expr | error) = {
 	};
 
 	return *ast_queue[0];
+};
+
+fn fn_call(lexer: *lex::lexer, id: *ast::expr) (ast::expr | error) = {
+	let loc = lex::mkloc(lexer);
+	let exprs: []*ast::expr = [];
+	let variadic = false;
+
+	want(lexer, ltok::LPAREN)?;
+
+	for (true) {
+		let expr = alloc(expr(lexer, true)?);
+		append(exprs, expr);
+
+		match (try(lexer, ltok::COMMA, ltok::ELLIPSIS, ltok::RPAREN)) {
+		case let tok: lex::token =>
+			switch (tok.0) {
+			case ltok::COMMA =>
+				if (try(lexer, ltok::RPAREN) is lex::token) {
+					break;
+				};
+			case ltok::ELLIPSIS =>
+				variadic = true;
+				want(lexer, ltok::RPAREN)?;
+				break;
+			case ltok::RPAREN =>
+				break;
+			case => abort(); // unreachable
+			};
+		case =>
+			break;
+		};
+	};
+
+	return ast::expr {
+		start = loc,
+		end = lex::prevloc(lexer),
+		expr = ast::call_expr {
+			lvalue = id,
+			variadic = variadic,
+			args = exprs,
+		},
+	};
+};
+
+fn assignment_op_to_op(tok: lex::token) (ast::binarithm_op | void) = {
+	switch (tok.0) {
+	case ltok::DIVEQ =>
+		return ast::binarithm_op::DIV;
+	case ltok::MINUSEQ =>
+		return ast::binarithm_op::MINUS;
+	case ltok::PLUSEQ =>
+		return ast::binarithm_op::PLUS;
+	case ltok::TIMESEQ =>
+		return ast::binarithm_op::TIMES;
+	case => return;
+	};
 };
 
 fn tok_to_op(tok: lex::token) ast::binarithm_op = {
@@ -506,8 +581,8 @@ fn literal(lexer: *lex::lexer) (ast::expr | error) = {
 fn binding(lexer: *lex::lexer) (ast::expr | error) = {
 	const loc = lex::mkloc(lexer);
 
-	const tok = want(lexer, ltok::LET)?.0;
-	const kind = switch (tok) {
+	const tok = want(lexer, ltok::LET)?;
+	const kind = switch (tok.0) {
 	case ltok::LET =>
 		yield ast::binding_kind::LET;
 	case => abort(); // unreachable
