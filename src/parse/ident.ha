@@ -14,7 +14,7 @@ export fn ident(lexer: *lex::lexer) (ast::ident | error) = {
 		match (try(lexer, ltok::DOUBLE_COLON)?) {
 		case void => break;
 		case lex::token =>
-			const name = want(lex, ltok::NAME)?.1 as str;
+			const name = want(lexer, ltok::NAME)?.1 as str;
 			append(ident, name);
 		};
 	};
