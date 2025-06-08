@@ -46,8 +46,6 @@ After parsing the prototype, the parser checks whether the function has a body o
 
 The resulting data is wrapped in an AST node representing a function declaration. This includes the function's name, prototype, body (if any), and some metadata like source code locations and attributes. The parser sets default values for things like whether the function is exported or whether it has any documentation, though those features could be added in the future.
 
-In summary, this parser file handles reading one or more function declarations from a Hare source file and turning them into internal representations that the rest of the compiler can work with. It deals strictly with function declarations and relies on other parser components to handle expressions, types, and identifiers.
-
 ### Compiler construction
 
 
