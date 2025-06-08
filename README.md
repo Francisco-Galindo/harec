@@ -82,7 +82,13 @@ The resulting data is wrapped in an AST node representing a function declaration
 
 
 ## Conclusion
+This project demonstrates the practical application of theoretical concepts in compiler construction, highlighting the structured progression from abstract syntax rules to concrete code generation. By implementing a compiler and parser for the Hare programming language, written in Hare itself, we reinforced the foundational principles of formal grammars, lexical analysis, and syntactic parsing.
 
+The semantic analysis phase was implemented through a symbol table that validates identifiers by checking their presence within a defined scope. This aligns with the theoretical model of symbol resolution and scope management, illustrating how simple data structures can enforce semantic rules effectively.
+
+Furthermore, by targeting the RISC-V architecture for code generation, the project required a precise translation from high-level constructs to a register-based, low-level instruction set. This concretely applied the theoretical mapping between intermediate representations and target machine code.
+
+Overall, the project exemplifies how theoretical knowledge—such as grammar definitions, parsing strategies, scope rules, and target architecture modeling—can be systematically applied to develop a working compiler. The results validate the importance of a solid theoretical foundation for solving complex systems-level programming problems.
 
 ## Sources
 
