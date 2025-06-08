@@ -35,6 +35,18 @@ Despite its advantages, recursive descent parsing does have limitations. Its rel
 
 ## Development
 ### parser
+For the parser there are multiple files used. With type.ha, using the lexer we obtain the datatypes and tokens of the elements so as to know what kind of expression are we working with.
+with type.ha, we define the abstract type of data to represent expressions, verifying if the document is woring with normal expressions, with control structures, etc. After verifying all of this, it generates an abstract sintax tree depending on the type of structure found. The parser itself is in parse.ha which takes raw tokens produced by the lexer and transforms them into structured representations (AST nodes) that the compiler can analyze and eventually compile.
+
+The primary function exposed from this file is called decls. It receives a pointer to a lexer and returns a list of parsed declarations. Internally, it uses a loop to keep parsing declarations until the lexer indicates that it has reached the end of the input. For each declaration it finds, it calls a helper function named decl_func, appends the resulting AST node to a list, and ensures that every declaration is followed by a semicolon. This function essentially builds up a complete list of top-level function declarations present in a source file.
+
+The real core of the parser logic lies in the decl_func function. This function begins by confirming that the current token is the keyword fn, signaling the start of a function declaration. Then it expects an identifier, which will become the function’s name. After that, it parses the function’s prototype, which includes both the parameter list and the return type. This is stored using a standard AST type wrapper, and the location of the prototype in the source code is also recorded.
+
+After parsing the prototype, the parser checks whether the function has a body or is merely declared without a body. This is done by looking for either an equal sign or a semicolon. If it finds an equal sign, the function has a body, and the parser expects a valid expression to follow, which it parses and stores as the function’s body. If it finds a semicolon, the parser assumes the function is only being declared and does not define a body at this point.
+
+The resulting data is wrapped in an AST node representing a function declaration. This includes the function's name, prototype, body (if any), and some metadata like source code locations and attributes. The parser sets default values for things like whether the function is exported or whether it has any documentation, though those features could be added in the future.
+
+In summary, this parser file handles reading one or more function declarations from a Hare source file and turning them into internal representations that the rest of the compiler can work with. It deals strictly with function declarations and relies on other parser components to handle expressions, types, and identifiers.
 
 ### Compiler construction
 
