@@ -100,3 +100,5 @@ Our compiler, although basic in comparison to a Java compiler, supports block-st
 Overall, the project exemplifies how theoretical knowledge, such as grammar definitions, parsing strategies, scope rules, and target architecture modeling, can be systematically applied to develop a working compiler. The results validate the importance of a solid theoretical foundation for solving complex systems-level programming problems.
 ## Sources
 
+Aho, A. V., Lam, M. S., Sethi, R., & Ullman, J. D. (2013). Compilers: Principles, Techniques, and Tools (2da ed.). Pearson.
+Hare specification. (s. f.). Harelang. https://harelang.org/specification
