@@ -19,6 +19,16 @@
 
 
 ## Introduction
+In this project, we will develop a compiler and its corresponding parser using the Hare programming language, both as the implementation language and as the language to be compiled. The main focus will be on the design and implementation of the syntax and semantic analysis stages, which are essential components of any compiler.
+
+Syntax analysis verifies the structural correctness of the source code according to the language's grammar. This involves constructing a parser capable of identifying valid program constructs and producing an intermediate representation, typically in the form of a syntax tree. For this stage, we develop a recursive descent parser by applying theoretical concepts.
+
+Semantic analysis complements syntax analysis by checking that the code adheres to the language's rules beyond its form—ensuring, for example, that operations are applied to compatible types and that identifiers are properly declared. It also involves building a symbol table to store relevant information about program elements.
+
+Creating a compiler is necessary for understanding how programming languages are processed and executed. By completing this project, we aim to produce a working compiler for Hare and gain practical knowledge of compiler construction techniques, particularly those related to parsing and semantic validation.
+
+## Theorical Background
+### What is a Compiler?
 A compiler is a program that reads a program written in one language, the source language, and translates it into an equivalent program in another language, the target language. In essence, a compiler maps a source program into a semantically equivalent target program. This mapping process consists of two main parts: analysis and synthesis.
 
 The analysis phase breaks the source program into its constituent components and assigns a grammatical structure to them. Based on this structure, it generates an intermediate representation of the source program. During this phase, the compiler also collects information about the program and stores it in a data structure known as the symbol table. This table, along with the intermediate representation, is passed to the synthesis phase.
@@ -39,10 +49,7 @@ An important function of a compiler is to record the variable names used in the 
 
 For large programs, compilation is often done in parts. The resulting relocatable machine code may need to be linked with other object files and libraries to form a complete executable. The linker resolves references to external memory addresses where code in one file refers to locations in another. Finally, the loader places the fully linked executable into memory, ready for execution.
 
-In this project we will create a compiler, making also the parser that the compiler will use. Both the compiler and the parser will use hare programming language for implementing the program and as the language that will be compiled.
-
-## Theorical Background
-### About the parser
+### About the sintax analysis
 Parsing is a fundamental process in the field of computer science, especially within the domains of compilers, interpreters, and language processing systems. It involves analyzing a sequence of tokens or symbols based on the rules defined by a formal grammar, with the purpose of constructing a syntactic structure, often in the form of a parse tree or abstract syntax tree. Parsing techniques are generally classified into top-down and bottom-up methods. Recursive descent parsing belongs to the former category and is one of the most widely understood and implemented parsing strategies due to its straightforward and modular approach.
 
 Recursive descent parsing operates by associating each non-terminal in a grammar with a corresponding function in the parser. These functions call one another in a recursive manner to recognize structures in the input, hence the term "recursive descent". As the input string is processed from left to right, the parser attempts to apply production rules that correspond to the structure of the grammar, descending through the hierarchy of rules until it either accepts the input or fails due to a mismatch.
@@ -51,7 +58,7 @@ This method is particularly suitable for grammars that conform to the LL(1) clas
 
 Despite its advantages, recursive descent parsing does have limitations. Its reliance on grammars that are LL(1) restricts its applicability to a subset of possible languages. Moreover, maintaining a recursive descent parser for a large and complex grammar can become cumbersome and error-prone, particularly when compared to automated parser generators or more powerful bottom-up parsing techniques. Nevertheless, for many use cases, particularly those involving smaller grammars or where control and transparency are valued over generality, recursive descent remains an effective and reliable method.
 
-### About the compiler
+### About the semantic analysis
 
 
 ### Compiler
@@ -82,13 +89,14 @@ The resulting data is wrapped in an AST node representing a function declaration
 
 
 ## Conclusion
-This project demonstrates the practical application of theoretical concepts in compiler construction, highlighting the structured progression from abstract syntax rules to concrete code generation. By implementing a compiler and parser for the Hare programming language, written in Hare itself, we reinforced the foundational principles of formal grammars, lexical analysis, and syntactic parsing.
+This project demonstrates the practical application of theoretical concepts in compiler construction, highlighting the structured progression from abstract syntax rules to concrete code generation. By implementing a compiler and parser for the Hare programming language, written in Hare itself, we reinforced foundational principles such as formal grammars, lexical analysis, syntax analysis, and semantic analysis.
 
-The semantic analysis phase was implemented through a symbol table that validates identifiers by checking their presence within a defined scope. This aligns with the theoretical model of symbol resolution and scope management, illustrating how simple data structures can enforce semantic rules effectively.
+Instead of relying on external libraries during the syntax analysis phase, we chose to build a recursive descent parser based on theoretical concepts covered in class and supported by bibliographic references. The semantic analysis phase was implemented through a symbol table that validates identifiers by checking their presence within a defined scope. This approach aligns with the theoretical model of symbol resolution and scope management, illustrating how simple data structures can effectively enforce semantic rules.
 
-Furthermore, by targeting the RISC-V architecture for code generation, the project required a precise translation from high-level constructs to a register-based, low-level instruction set. This concretely applied the theoretical mapping between intermediate representations and target machine code.
+Furthermore, by targeting the RISC-V architecture for code generation, the project required precise translation from high-level constructs to a register-based, low-level instruction set. This provided a concrete application of the theoretical mapping between intermediate representations and target machine code.
 
-Overall, the project exemplifies how theoretical knowledge—such as grammar definitions, parsing strategies, scope rules, and target architecture modeling—can be systematically applied to develop a working compiler. The results validate the importance of a solid theoretical foundation for solving complex systems-level programming problems.
+Our compiler, although basic in comparison to a Java compiler, supports block-structured code such as if statements, for loops, and functions, allowing simple programs to be parsed, compiled, and executed successfully.
 
+Overall, the project exemplifies how theoretical knowledge, such as grammar definitions, parsing strategies, scope rules, and target architecture modeling, can be systematically applied to develop a working compiler. The results validate the importance of a solid theoretical foundation for solving complex systems-level programming problems.
 ## Sources
 
