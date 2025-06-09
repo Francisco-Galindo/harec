@@ -65,20 +65,20 @@ Despite its advantages, recursive descent parsing does have limitations. Its rel
 
 ## Development
 ### Parser
-For the parser there are multiple files used. With type.ha, using the lexer we obtain the datatypes and tokens of the elements so as to know what kind of expression are we working with.
-with type.ha, we define the abstract type of data to represent expressions, verifying if the document is woring with normal expressions, with control structures, etc. After verifying all of this, it generates an abstract sintax tree depending on the type of structure found. The parser itself is in parse.ha which takes raw tokens produced by the lexer and transforms them into structured representations (AST nodes) that the compiler can analyze and eventually compile.
+The parser is a fundamental component of the compiler, responsible for analyzing the syntactic structure of the source code and transforming it into an internal representation that the rest of the compiler can work with. In this project, the parser was built specifically to process code written in the Hare programming language.
 
-The primary function exposed from this file is called decls. It receives a pointer to a lexer and returns a list of parsed declarations. Internally, it uses a loop to keep parsing declarations until the lexer indicates that it has reached the end of the input. For each declaration it finds, it calls a helper function named decl_func, appends the resulting AST node to a list, and ensures that every declaration is followed by a semicolon. This function essentially builds up a complete list of top-level function declarations present in a source file.
+The development of the parser began with the formal definition of the grammar rules that describe valid Hare constructs. These rules, grounded in theoretical models such as context-free grammars, guided the structure of the parser and ensured that the syntax recognized was consistent with the language specification.
 
-The real core of the parser logic lies in the decl_func function. This function begins by confirming that the current token is the keyword fn, signaling the start of a function declaration. Then it expects an identifier, which will become the function’s name. After that, it parses the function’s prototype, which includes both the parameter list and the return type. This is stored using a standard AST type wrapper, and the location of the prototype in the source code is also recorded.
+We based on the grammar that was already described in Hare's language especification, we didn't have any trouble since this grammar is LL(1).  This makes our parser design a lot simpler, which was a deliberate goal of the language design. The parser was designed to process a sequence of tokens —produced by a lexer— and validate whether those tokens form valid syntactic structures like variable declarations, expressions, or function definitions. During this stage, the parser also constructs an abstract syntax tree (AST), which represents the hierarchical structure of the program in a form that can be traversed and analyzed by later compilation stages.
 
-After parsing the prototype, the parser checks whether the function has a body or is merely declared without a body. This is done by looking for either an equal sign or a semicolon. If it finds an equal sign, the function has a body, and the parser expects a valid expression to follow, which it parses and stores as the function’s body. If it finds a semicolon, the parser assumes the function is only being declared and does not define a body at this point.
+Key to the development was the identification and separation of concerns. Each syntactic construct was handled by a specific part of the parser, allowing for modularity and clarity. The design aimed to closely follow the grammar rules, making the parser easier to extend and debug.
 
-The resulting data is wrapped in an AST node representing a function declaration. This includes the function's name, prototype, body (if any), and some metadata like source code locations and attributes. The parser sets default values for things like whether the function is exported or whether it has any documentation, though those features could be added in the future.
+By the end of this phase, the parser was capable of transforming raw Hare source code into a structured and meaningful representation, ready for semantic analysis and code generation. This work highlights the importance of applying formal language theory and grammar design in the practical construction of programming tools.
 
 ### Compiler construction
 
-
+#### Linker
+In this project, we did not develop a custom linker; we relied on the one included with GCC. Since the compiler targets the RISC-V architecture, the generated assembly code was tailored to match the specific structure of our test cases.
 
 ### Test inputs
 
