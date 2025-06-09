@@ -101,4 +101,5 @@ Overall, the project exemplifies how theoretical knowledge, such as grammar defi
 ## Sources
 
 Aho, A. V., Lam, M. S., Sethi, R., & Ullman, J. D. (2013). Compilers: Principles, Techniques, and Tools (2da ed.). Pearson.
+
 Hare specification. (s. f.). Harelang. https://harelang.org/specification
