@@ -224,7 +224,17 @@ addressing instructions without requiring an additional traversal of
 the abstract syntax tree.
 
 ** Code generation
+Code generation is a critical phase in the compilation pipeline, responsible for translating an intermediate representation of a program into executable code in a target architecture. This process involves a careful mapping from high-level language constructs to low-level instructions, considering both syntactic structure and semantic information collected during earlier compilation stages.
 
+Research in code generation focuses on several fundamental challenges, including instruction selection, register allocation, memory management, and adherence to target architecture conventions. For register-based architectures such as RISC-V, code generation must respect the calling conventions and efficiently manage the use of general-purpose registers and the stack. The translation process must also preserve the semantics of the original program, ensuring that variables are correctly stored and retrieved, control flow is maintained, and expressions are evaluated in the proper order.
+
+A key element in the code generation process is the integration of information from the symbol table and the syntax-directed translation framework. Stack-based memory layout, for instance, is typically resolved during or after parsing by assigning memory offsets to variables based on their scope and lifetime. This allows code generators to emit instructions such as lw and sw with accurate address calculations, ensuring correct runtime behavior.
+
+Modern code generation techniques often involve multiple levels of intermediate representations, which can simplify target code emission and enable architecture-specific optimizations. However, in certain cases, a single-pass approach that emits target code directly during parsing may be appropriate, especially in compilers targeting constrained environments or educational settings.
+
+Although sophisticated code generators incorporate optimizations like instruction scheduling or loop unrolling, even minimal implementations must carefully handle fundamental tasks such as translating expressions, managing scope transitions, and preserving the control flow of the source program.
+
+Targeting the RISC-V instruction set presents particular opportunities and challenges. As an open, modular architecture with a relatively clean instruction set, RISC-V offers a compelling platform for compiler research and experimentation. It allows researchers to explore code generation strategies without the complexity of legacy architectures, while still addressing real-world constraints such as register pressure, alignment, and function call conventions.
 * Development
 ** Parser
 
@@ -243,7 +253,90 @@ consistent with the language specification.
 We based on the grammar that was already described in Hare's language
 especification, we didn't have any trouble since this grammar is
 LL(1).  This makes our parser design a lot simpler, which was a
-deliberate goal of the language design. The parser was designed to
+deliberate goal of the language design. Some of the sections implemented are:
+- Expressions
+   - literal:
+      - integer-literal
+      - rune-literal
+      - string-literal
+      - struct-literal
+      - true
+      - false
+      - void
+      - null
+      - done
+   - unary-operator:      one of:
+      - - ~ ! * &
+   - comparison-expression:
+      - inclusive-or-expression
+      - comparison-expression < inclusive-or-expression
+      - comparison-expression > inclusive-or-expression
+      - comparison-expression <= inclusive-or-expression
+      - comparison-expression >= inclusive-or-expression
+   - equality-expression:
+      - comparison-expression
+      - equality-expression == comparison-expression
+      - equality-expression != comparison-expression
+   - logical-and-expression:
+      - equality-expression
+      - logical-and-expression && equality-expression
+   - logical-or-expression:
+      - logical-xor-expression
+      - logical-or-expression || logical-xor-expression
+
+Here are some simple examples:
+
+Code:
+
+int f(){ 
+
+return 999; 
+
+}
+
+Grammar
+
+<program>
+
+<function>
+
+ "int" <id> "(" ")" "{" <statement> "}"
+
+ "int" f "(" ")" "{" <statement> "}"
+
+ "int" f "(" ")" "{" "return" <exp> ";" "}"
+
+ "int" f "(" ")" "{" "return" 999 ";" "}"
+
+Code:
+
+int suma(int a, int b) {
+
+  return a + b;
+
+}
+
+Grammar
+
+<program> ::= <function>
+
+<function> ::= "int" <identifier> "(" <identifier> ")" "{" <statement> "}"
+
+<id> ::= "identidad"
+
+<id> ::= "x"
+
+<statement> ::= "return" <exp> ";"
+
+<exp> ::= <identifier>
+
+<identifier> ::= <name>
+
+<name> ::= "x"
+
+We also implemented the for loops and if statements
+
+The parser was designed to
 process a sequence of tokens —produced by a lexer— and validate
 whether those tokens form valid syntactic structures like variable
 declarations, expressions, or function definitions. During this stage,
