@@ -1,6 +1,6 @@
  Instalando `hare`
 
-Ejecuta los siguientes comandos para instalar el *toolchain* de `hare` en tu computadora con linux.
+Ejecuta los siguientes comandos para instalar el *toolchain* de `hare` en tu computadora con linux. Aqui se asume que se está utilizando un sistema Linux basado en Debian (como Ubuntu, Linux Mint, etc.).
 
 Instala los paquetes necesarios para compilar todos los programas:
 ```sh
@@ -131,3 +131,24 @@ Hello, world!
 Привіт, світе!
 こんにちは世界！
 ```
+
+
+# Instalando la toolchain para RISC-V 32
+
+```sh
+sudo apt install gcc-riscv64-linux-gnu
+```
+
+Para poder ejecutar los programas hechos para RISC-V en una computadora con otra arquitectura, puede utilizarse QEMU.
+
+Así, el proceso de compilación se basa en ejecutar:
+
+```
+cd src/
+hare run compile.ha -f <path al programa> > ../program.s
+cd ..
+make
+qemu-riscv32 program
+echo $?
+```
+
