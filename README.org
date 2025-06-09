@@ -266,13 +266,7 @@ in the practical construction of programming tools.
 
 ** Compiler construction
 
-First, the code generator creates a variable map to validate if all the variables on the document, if it finds one that doesn't exist the generation stops, warning you about the non-existent variable. All the map functions are used to create this variables map, fill it with data and hash it. After that there are the gen functions in charge of the generation of code. First, the gen function receives a list of declaration from the parser, initializing and empty scope and iterating over any iteration. If the declaration is a function it calls gen_fn to generate code. The gen_fn first verifies if the function is main or not, and if it is, it creates a special entry point to act as the start of the code. It also adjusts the the stack pointer and saves the return adress in a stack. If the function has a body, it calls gen_expr that works as a dispatcher function that matches on the expression type (e.g., compound block, binary expression, literal) and delegates to a specific codegen function, such as case gen_compund_expr.
-
-gen_compound_expr makes it possible to analyse code  from compound blocks isolating the scope to only that part, saving the variables inside of the block in a copy map and iterating on all the sub-elements of the block, finally saving or returing the end rsult of the code generation. gen_expr_decl is used  to generate code for let style declarations inside of a block, while gen_expr_lit is used for literal values. As for the returns, it is handled by gen_expr_ret which evaluates the return, gets the function out of the stack and sets the branch_returned flag to guarantee that it is returned. FOr binary operators, the gen_expr_bin is used, evaluating first the values, then applying the operator and finally saving the value. This compiler can also handle if's and for's, using the gen_expr_if and the gen_expr_for.
-
-The gen_expr_if validates the condition and hecks if a0==a1, if this is true, it jumps to the else branch if it exists, emits code for the then branch and for the else too if it exists, it also avoids clashes with nested conditionals. Finally, the gen_expr_for begins by creating a unique label for both the start and end of the loop, typically named something like .for0 and .forend0, using an incrementing counter to keep them distinct. Before entering the loop body, it emits instructions to jump to the condition-checking part of the loop. If the condition evaluates to true, the compiler emits the code for the loop body, and then emits the code to re-evaluate the condition. This cycle continues, checking the condition and executing the body, until the condition becomes false, which is represented by the register a0 being zero. When this happens, control is transferred to the end label, effectively exiting the loop.
-
-The integration of code generation in the compiler, implemented in the Hare programming language, closely follows the logic and structure proposed by Nora Sandler in her blog post “Let’s Write a Compiler”. The original article outlines a minimalistic approach to compiler construction, targeting the x86-64 architecture. However, the implementation presented here opts for a more modern and RISC-oriented alternative: the RISC-V 32-bit architecture (riscv32). This transition reflects both pedagogical and practical motivations, including the simplicity and regularity of RISC-V’s instruction set, which is well-suited for educational compilers and facilitates understanding of low-level code generation principles.
+The integration of code generation in the compiler, is inspired in the logic and structure proposed by Nora Sandler in her blog post “Let’s Write a Compiler”. The original article outlines a minimalistic approach to compiler construction, targeting the x86-64 architecture. However, the implementation presented here opts for a more modern and RISC-oriented alternative: the RISC-V 64-bit architecture (riscv64). This transition reflects both pedagogical and practical motivations, including the simplicity and regularity of RISC-V’s instruction set, which is well-suited for educational compilers and facilitates understanding of low-level code generation principles.
 
 The compiler backend is structured around generating RISC-V assembly code from an abstract syntax tree (AST), following a recursive descent through expressions and statements. The central function, gen, initiates this process by traversing a list of top-level declarations and dispatching function declarations (ast::decl_func) to gen_fn. Each function is compiled into a global RISC-V symbol, with appropriate prologue code for stack manipulation (addi sp, sp, -4 and sw ra, 0(sp)) to preserve return addresses. Parameter handling is simplified by supporting a single argument, moved into the a registers and stored on the stack.
 
@@ -283,6 +277,95 @@ Each expression type defined in the AST, such as binary operations, conditionals
 Return statements are compiled with stack cleanup and either a jump to ecall for the main function or a ret for others, following conventional calling conventions. Additionally, the code handles compound blocks by creating new variable scopes and carefully managing stack unwinding, especially in the presence of non-returning branches.
 
 * Results
+
+In this repository, you will find the =compile.ha= source file, which
+can be compiled and run using the usual Harelang toolchain. The
+resulting program will emit an assembly program to =stdout= which can
+be redirected in to a file for linking and finally execution.
+
+#+BEGIN_SRC
+$ cat testfiles/basic.ha
+fn main() int = {
+        return 3 + 1;
+};
+$ hare run compile.ha -f testfiles/basic.ha
+.global _start                           
+_start:
+        addi sp, sp, -4
+        sw ra, 0(sp)
+        li t0, 3
+        addi sp, sp, -4
+        sw t0, 0(sp)
+        li t0, 1
+        lw t1, 0(sp)
+        addi sp, sp, 4
+        add t0, t1, t0
+        addi sp, sp, 0 
+        mv a0, t0
+        sw ra, 0(sp)
+        addi sp, sp, 4
+
+        addi a7, x0, 93
+        ecall
+#+END_SRC
+
+We created a set of source files in order to test the compiler we
+built. In general, these files utilise the basic constructs of the
+language, like =for= loops, conditional blocks (=if-else=), variable
+bindings, assignments and scope management, function definitions and
+calls.
+
+Consider this program:
+
+#+BEGIN_SRC
+fn foo(x: int, y: int) int = {
+	if (x < 10) {
+		y *= 2;
+	};
+	return x * y;
+};
+
+fn main() int = {
+	let x = foo(4, 5);
+	return x + 5;
+};
+#+END_SRC
+
+After compilation and execution, the status code of the program should
+be the output:
+
+#+BEGIN_SRC
+$ qemu-riscv32 program
+$ echo $?
+45
+#+END_SRC
+
+The results are the following, note that the =nix-shell= command
+should be replaced by =make=. Nix is being used to provide an
+immutable development shell. That is not needed for the compiler to
+work:
+
+#+ATTR_LATEX: :height 2in
+#+CAPTION: Probando un programa básico con una operación aritmética.
+[[./img/2025-06-08-23:02:19.png]]
+
+#+ATTR_LATEX: :height 2in
+#+CAPTION: Probando un programa con operaciones aritméticas más complejas.
+[[./img/2025-06-08-23:05:11.png]]
+
+#+ATTR_LATEX: :height 2.5in
+#+CAPTION: Probando un programa con un ciclo =for=.
+[[./img/2025-06-08-23:06:41.png]]
+
+#+ATTR_LATEX: :height 5in
+#+CAPTION: Probando un programa con una función, condicionales y ciclos.
+[[./img/2025-06-08-23:09:04.png]]
+
+It is clear that execution is correct, although not optimized. There
+is no functioning /IO/ system, which limits our output to program
+status codes. Still that is enough to showcase that compilation is
+being done.
+
 * Conclusion
 
 This project demonstrates the practical application of theoretical
@@ -319,6 +402,8 @@ architecture modeling, can be systematically applied to develop a
 working compiler. The results validate the importance of a solid
 theoretical foundation for solving complex systems-level programming
 problems.
+
+\newpage
 
 * References
 \printbibliography[heading=none]
