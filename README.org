@@ -56,7 +56,7 @@ this stage, we develop a recursive descent parser by applying
 theoretical concepts.
 
 Semantic analysis complements syntax analysis by checking that the code
-adheres to the language's rules beyond its form---ensuring, for example,
+adheres to the language's rules beyond its form, ensuring, for example,
 that operations are applied to compatible types and that identifiers are
 properly declared. It also involves building a symbol table to store
 relevant information about program elements.
@@ -244,7 +244,7 @@ We based on the grammar that was already described in Hare's language
 especification, we didn't have any trouble since this grammar is
 LL(1).  This makes our parser design a lot simpler, which was a
 deliberate goal of the language design. The parser was designed to
-process a sequence of tokens —produced by a lexer— and validate
+process a sequence of tokens, produced by a lexer, and validate
 whether those tokens form valid syntactic structures like variable
 declarations, expressions, or function definitions. During this stage,
 the parser also constructs an abstract syntax tree (AST), which
@@ -270,7 +270,7 @@ First, the code generator creates a variable map to validate if all the variable
 
 gen_compound_expr makes it possible to analyse code  from compound blocks isolating the scope to only that part, saving the variables inside of the block in a copy map and iterating on all the sub-elements of the block, finally saving or returing the end rsult of the code generation. gen_expr_decl is used  to generate code for let style declarations inside of a block, while gen_expr_lit is used for literal values. As for the returns, it is handled by gen_expr_ret which evaluates the return, gets the function out of the stack and sets the branch_returned flag to guarantee that it is returned. FOr binary operators, the gen_expr_bin is used, evaluating first the values, then applying the operator and finally saving the value. This compiler can also handle if's and for's, using the gen_expr_if and the gen_expr_for.
 
-The gen_expr_if validates the condition and hecks if a0==a1, if this is true, it jumps to the else branch if it exists, emits code for the then branch and for the else too if it exists, it also avoids clashes with nested conditionals. Finally, the gen_expr_for begins by creating a unique label for both the start and end of the loop, typically named something like .for0 and .forend0, using an incrementing counter to keep them distinct. Before entering the loop body, it emits instructions to jump to the condition-checking part of the loop. If the condition evaluates to true, the compiler emits the code for the loop body, and then emits the code to re-evaluate the condition. This cycle continues—checking the condition and executing the body—until the condition becomes false, which is represented by the register a0 being zero. When this happens, control is transferred to the end label, effectively exiting the loop.
+The gen_expr_if validates the condition and hecks if a0==a1, if this is true, it jumps to the else branch if it exists, emits code for the then branch and for the else too if it exists, it also avoids clashes with nested conditionals. Finally, the gen_expr_for begins by creating a unique label for both the start and end of the loop, typically named something like .for0 and .forend0, using an incrementing counter to keep them distinct. Before entering the loop body, it emits instructions to jump to the condition-checking part of the loop. If the condition evaluates to true, the compiler emits the code for the loop body, and then emits the code to re-evaluate the condition. This cycle continues, checking the condition and executing the body, until the condition becomes false, which is represented by the register a0 being zero. When this happens, control is transferred to the end label, effectively exiting the loop.
 
 ** Test inputs
 * Results
