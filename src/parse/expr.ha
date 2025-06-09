@@ -36,7 +36,7 @@ export fn expr(lexer: *lex::lexer, is_in_parenthesis: bool = false) (ast::expr |
 			let lhs = ex;
 			match (ex.expr) {
 			case ast::access_identifier =>
-				let rhs = shunting_yard(lexer)?;
+				let rhs = shunting_yard(lexer, is_in_parenthesis)?;
 				ex = ast::expr {
 					start = loc,
 					end = lex::prevloc(lexer),
@@ -137,12 +137,14 @@ fn for_expr(lexer: *lex::lexer) (ast::expr | error) = {
 		yield null;
 	};
 
+
 	let afterthought: nullable *ast::expr = if (try(lexer, ltok::SEMICOLON) is lex::token) {
-		yield match (expr(lexer)) {
+		yield match (expr(lexer, true)) {
 		case let expr: ast::expr =>
 			yield alloc(expr);
-		case =>
-			yield null;
+		case let err: error =>
+			return err;
+			// yield null;
 		};
 	} else null;
 

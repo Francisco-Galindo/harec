@@ -10,6 +10,7 @@ use hare::lex; // uncomment to use built-in
 use hare::lex::{ltok};
 use parse;
 use hare::ast;
+use gen;
 
 use os;
 use types;
@@ -67,8 +68,13 @@ export fn main() void = {
 
 	match (parse::decls(&lexr)) {
 	case let exp: []ast::decl =>
-		fmt::println("PARSEO ALGO")!;
-		print_decls(exp);
+		// fmt::println("PARSEO ALGO")!;
+		// print_decls(exp);
+		match (gen::gen(exp)) {
+		case let err: gen::error =>
+		    fmt::println(err.1)!;
+		case => fmt::println("# Exito al generar")!;
+		};
 	case => fmt::println("ALGO SALIó MAL")!;
 	};
 
