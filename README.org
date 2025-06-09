@@ -272,8 +272,96 @@ gen_compound_expr makes it possible to analyse code  from compound blocks isolat
 
 The gen_expr_if validates the condition and hecks if a0==a1, if this is true, it jumps to the else branch if it exists, emits code for the then branch and for the else too if it exists, it also avoids clashes with nested conditionals. Finally, the gen_expr_for begins by creating a unique label for both the start and end of the loop, typically named something like .for0 and .forend0, using an incrementing counter to keep them distinct. Before entering the loop body, it emits instructions to jump to the condition-checking part of the loop. If the condition evaluates to true, the compiler emits the code for the loop body, and then emits the code to re-evaluate the condition. This cycle continues, checking the condition and executing the body, until the condition becomes false, which is represented by the register a0 being zero. When this happens, control is transferred to the end label, effectively exiting the loop.
 
-** Test inputs
 * Results
+
+In this repository, you will find the =compile.ha= source file, which
+can be compiled and run using the usual Harelang toolchain. The
+resulting program will emit an assembly program to =stdout= which can
+be redirected in to a file for linking and finally execution.
+
+#+BEGIN_SRC
+$ cat testfiles/basic.ha
+fn main() int = {
+        return 3 + 1;
+};
+$ hare run compile.ha -f testfiles/basic.ha
+.global _start                           
+_start:
+        addi sp, sp, -4
+        sw ra, 0(sp)
+        li t0, 3
+        addi sp, sp, -4
+        sw t0, 0(sp)
+        li t0, 1
+        lw t1, 0(sp)
+        addi sp, sp, 4
+        add t0, t1, t0
+        addi sp, sp, 0 
+        mv a0, t0
+        sw ra, 0(sp)
+        addi sp, sp, 4
+
+        addi a7, x0, 93
+        ecall
+#+END_SRC
+
+We created a set of source files in order to test the compiler we
+built. In general, these files utilise the basic constructs of the
+language, like =for= loops, conditional blocks (=if-else=), variable
+bindings, assignments and scope management, function definitions and
+calls.
+
+Consider this program:
+
+#+BEGIN_SRC
+fn foo(x: int, y: int) int = {
+	if (x < 10) {
+		y *= 2;
+	};
+	return x * y;
+};
+
+fn main() int = {
+	let x = foo(4, 5);
+	return x + 5;
+};
+#+END_SRC
+
+After compilation and execution, the status code of the program should
+be the output:
+
+#+BEGIN_SRC
+$ qemu-riscv32 program
+$ echo $?
+45
+#+END_SRC
+
+The results are the following, note that the =nix-shell= command
+should be replaced by =make=. Nix is being used to provide an
+immutable development shell. That is not needed for the compiler to
+work:
+
+#+ATTR_LATEX: :height 2in
+#+CAPTION: Probando un programa básico con una operación aritmética.
+[[./img/2025-06-08-23:02:19.png]]
+
+#+ATTR_LATEX: :height 2in
+#+CAPTION: Probando un programa con operaciones aritméticas más complejas.
+[[./img/2025-06-08-23:05:11.png]]
+
+#+ATTR_LATEX: :height 2.5in
+#+CAPTION: Probando un programa con un ciclo =for=.
+[[./img/2025-06-08-23:06:41.png]]
+
+#+ATTR_LATEX: :height 5in
+#+CAPTION: Probando un programa con una función, condicionales y ciclos.
+[[./img/2025-06-08-23:09:04.png]]
+
+It is clear that execution is correct, although not optimized. There
+is no functioning /IO/ system, which limits our output to program
+status codes. Still that is enough to showcase that compilation is
+being done.
+
 * Conclusion
 
 This project demonstrates the practical application of theoretical
@@ -310,6 +398,8 @@ architecture modeling, can be systematically applied to develop a
 working compiler. The results validate the importance of a solid
 theoretical foundation for solving complex systems-level programming
 problems.
+
+\newpage
 
 * References
 \printbibliography[heading=none]
