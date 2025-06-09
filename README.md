@@ -59,9 +59,17 @@ This method is particularly suitable for grammars that conform to the LL(1) clas
 Despite its advantages, recursive descent parsing does have limitations. Its reliance on grammars that are LL(1) restricts its applicability to a subset of possible languages. Moreover, maintaining a recursive descent parser for a large and complex grammar can become cumbersome and error-prone, particularly when compared to automated parser generators or more powerful bottom-up parsing techniques. Nevertheless, for many use cases, particularly those involving smaller grammars or where control and transparency are valued over generality, recursive descent remains an effective and reliable method.
 
 ### About the semantic analysis
+Syntax-Directed Translation (SDT) is a fundamental concept in compiler design that integrates semantic processing with syntactic analysis. It relies on associating semantic rules or actions with the grammar productions of a language. These rules guide the compiler in performing translations such as type checking, intermediate code generation, or symbol table construction, depending on the stage of compilation.
 
+In the context of a recursive descent parser, SDT is implemented through embedded semantic actions within the parser’s recursive functions. Each non-terminal in the grammar corresponds to a function, and each production rule is handled by a conditional branch or sequence of statements. As parsing progresses, these functions not only verify syntactic correctness but also invoke code that performs semantic analysis or constructs intermediate representations.
 
-### Compiler
+In the compiler developed for this project, SDT serves as the mechanism through which semantic analysis is conducted during parsing. The approach integrates semantic checks directly into the recursive descent procedures, enabling the parser to enforce language rules and gather information necessary for later stages of compilation. Semantic actions are embedded within the parsing functions and executed in accordance with the structure of the grammar, which ensures that semantic correctness is validated as each construct is recognized.
+
+A key component of the semantic analysis is the use of symbol tables, implemented as a set of mappings that correspond to each lexical scope in the program. These symbol tables are maintained and updated dynamically as the parser enters and exits scopes, such as functions or nested blocks. The SDT rules associated with variable declarations and references are responsible for updating or querying these tables, ensuring that variables are declared before use, preventing redefinitions within the same scope, and enabling correct resolution of identifiers across nested scopes.
+
+In addition to managing declarations and references, the SDT implementation also supports stack-based memory layout by calculating and assigning stack offsets to variables at parse time. When a variable is declared, its offset is computed relative to the current frame, and this information is stored in the symbol table. This preparation enables the code generation phase to emit correct memory addressing instructions without requiring an additional traversal of the abstract syntax tree.
+
+### Code generation
 
 ## Development
 ### Parser
