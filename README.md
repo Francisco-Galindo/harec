@@ -5,7 +5,7 @@
   <p> Universidad Nacional Autónoma de México </p>
   <p> Ingeniería en Computación </p>
   <p> Compiladores </p>
-  <p> Lexer - Lexical Analysis </p>
+  <p> Hare Compiler </p>
   <p> Alumnos: </p>
   <p>320198388</p>
   <p>320051665</p>
@@ -14,7 +14,7 @@
   <p>320054336</p>
   <p> Grupo 5 </p>
   <p> Semestre 2025-2 </p>
-  <p> México, CDMX. Marzo 2025 </p>
+  <p> México, CDMX. Junio 2025 </p>
 </div>
 
 
