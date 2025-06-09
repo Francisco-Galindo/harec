@@ -254,6 +254,8 @@ We based on the grammar that was already described in Hare's language
 especification, we didn't have any trouble since this grammar is
 LL(1).  This makes our parser design a lot simpler, which was a
 deliberate goal of the language design. Some of the sections implemented are:
+
+#+BEGIN_SRC
 - Expressions
    - literal:
       - integer-literal
@@ -283,9 +285,11 @@ deliberate goal of the language design. Some of the sections implemented are:
    - logical-or-expression:
       - logical-xor-expression
       - logical-or-expression || logical-xor-expression
+#+END_SRC
 
 Here are some simple examples:
 
+#+BEGIN_SRC
 Code:
 
 int f(){ 
@@ -334,7 +338,9 @@ Grammar
 
 <name> ::= "x"
 
-We also implemented the for loops and if statements
+#+END_SRC
+
+We also implemented for loops and if statements
 
 The parser was designed to
 process a sequence of tokens —produced by a lexer— and validate
