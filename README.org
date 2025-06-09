@@ -177,53 +177,112 @@ control and transparency are valued over generality, recursive descent
 remains an effective and reliable method.
 
 ** About the semantic analysis
-** Compiler
+
+Syntax-Directed Translation (SDT) is a fundamental concept in compiler
+design that integrates semantic processing with syntactic analysis. It
+relies on associating semantic rules or actions with the grammar
+productions of a language. These rules guide the compiler in
+performing translations such as type checking, intermediate code
+generation, or symbol table construction, depending on the stage of
+compilation.
+
+In the context of a recursive descent parser, SDT is implemented
+through embedded semantic actions within the parser’s recursive
+functions. Each non-terminal in the grammar corresponds to a function,
+and each production rule is handled by a conditional branch or
+sequence of statements. As parsing progresses, these functions not
+only verify syntactic correctness but also invoke code that performs
+semantic analysis or constructs intermediate representations.
+
+In the compiler developed for this project, SDT serves as the
+mechanism through which semantic analysis is conducted during
+parsing. The approach integrates semantic checks directly into the
+recursive descent procedures, enabling the parser to enforce language
+rules and gather information necessary for later stages of
+compilation. Semantic actions are embedded within the parsing
+functions and executed in accordance with the structure of the
+grammar, which ensures that semantic correctness is validated as each
+construct is recognized.
+
+A key component of the semantic analysis is the use of symbol tables,
+implemented as a set of mappings that correspond to each lexical scope
+in the program. These symbol tables are maintained and updated
+dynamically as the parser enters and exits scopes, such as functions
+or nested blocks. The SDT rules associated with variable declarations
+and references are responsible for updating or querying these tables,
+ensuring that variables are declared before use, preventing
+redefinitions within the same scope, and enabling correct resolution
+of identifiers across nested scopes.
+
+In addition to managing declarations and references, the SDT
+implementation also supports stack-based memory layout by calculating
+and assigning stack offsets to variables at parse time. When a
+variable is declared, its offset is computed relative to the current
+frame, and this information is stored in the symbol table. This
+preparation enables the code generation phase to emit correct memory
+addressing instructions without requiring an additional traversal of
+the abstract syntax tree.
+
+** Code generation
+
 * Development
 ** Parser
-For the parser there are multiple files used. With type.ha, using the
-lexer we obtain the datatypes and tokens of the elements so as to know
-what kind of expression are we working with. with type.ha, we define the
-abstract type of data to represent expressions, verifying if the
-document is woring with normal expressions, with control structures,
-etc. After verifying all of this, it generates an abstract sintax tree
-depending on the type of structure found. The parser itself is in
-parse.ha which takes raw tokens produced by the lexer and transforms
-them into structured representations (AST nodes) that the compiler can
-analyze and eventually compile.
 
-The primary function exposed from this file is called decls. It receives
-a pointer to a lexer and returns a list of parsed declarations.
-Internally, it uses a loop to keep parsing declarations until the lexer
-indicates that it has reached the end of the input. For each declaration
-it finds, it calls a helper function named decl_func, appends the
-resulting AST node to a list, and ensures that every declaration is
-followed by a semicolon. This function essentially builds up a complete
-list of top-level function declarations present in a source file.
+The parser is a fundamental component of the compiler, responsible for
+analyzing the syntactic structure of the source code and transforming
+it into an internal representation that the rest of the compiler can
+work with. In this project, the parser was built specifically to
+process code written in the Hare programming language.
 
-The real core of the parser logic lies in the decl_func function. This
-function begins by confirming that the current token is the keyword fn,
-signaling the start of a function declaration. Then it expects an
-identifier, which will become the function's name. After that, it parses
-the function's prototype, which includes both the parameter list and the
-return type. This is stored using a standard AST type wrapper, and the
-location of the prototype in the source code is also recorded.
+The development of the parser began with the formal definition of the
+grammar rules that describe valid Hare constructs. These rules,
+grounded in theoretical models such as context-free grammars, guided
+the structure of the parser and ensured that the syntax recognized was
+consistent with the language specification.
 
-After parsing the prototype, the parser checks whether the function has
-a body or is merely declared without a body. This is done by looking for
-either an equal sign or a semicolon. If it finds an equal sign, the
-function has a body, and the parser expects a valid expression to
-follow, which it parses and stores as the function's body. If it finds a
-semicolon, the parser assumes the function is only being declared and
-does not define a body at this point.
+We based on the grammar that was already described in Hare's language
+especification, we didn't have any trouble since this grammar is
+LL(1).  This makes our parser design a lot simpler, which was a
+deliberate goal of the language design. The parser was designed to
+process a sequence of tokens —produced by a lexer— and validate
+whether those tokens form valid syntactic structures like variable
+declarations, expressions, or function definitions. During this stage,
+the parser also constructs an abstract syntax tree (AST), which
+represents the hierarchical structure of the program in a form that
+can be traversed and analyzed by later compilation stages.
 
-The resulting data is wrapped in an AST node representing a function
-declaration. This includes the function's name, prototype, body (if
-any), and some metadata like source code locations and attributes. The
-parser sets default values for things like whether the function is
-exported or whether it has any documentation, though those features
-could be added in the future.
+Key to the development was the identification and separation of
+concerns. Each syntactic construct was handled by a specific part of
+the parser, allowing for modularity and clarity. The design aimed to
+closely follow the grammar rules, making the parser easier to extend
+and debug.
+
+By the end of this phase, the parser was capable of transforming raw
+Hare source code into a structured and meaningful representation,
+ready for semantic analysis and code generation. This work highlights
+the importance of applying formal language theory and grammar design
+in the practical construction of programming tools.
+
 
 ** Compiler construction
+
+Syntax analysis verifies the structural correctness of the source code
+according to the language's grammar. This involves constructing a parser
+capable of identifying valid program constructs and producing an
+intermediate representation, typically in the form of a syntax tree. For
+this stage, we develop a recursive descent parser by applying
+theoretical concepts.
+
+Semantic analysis complements syntax analysis by checking that the code
+adheres to the language's rules beyond its form---ensuring, for example,
+that operations are applied to compatible types and that identifiers are
+properly declared. It also involves building a symbol table to store
+relevant information about program elements.
+
+Creating a compiler is necessary for understanding how programming
+languages are processed and executed. By completing this project, we aim
+to produce a working compiler for Hare and gain practical knowledge of
+
 ** Test inputs
 * Results
 * Conclusion
